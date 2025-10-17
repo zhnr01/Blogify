@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+
+{% block container %}
+    {{super()}}
+    <div class="row justify-content-md-center">
+        <div class="col-md-9">
+            <h1>Moderate Comments</h1>
+            {% set moderate = True %}
+            {% include '_comments.html' %}
+            
+                {{ macros.pagination_widget(pagination, '.moderate') }}
+            </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% import "_macros.html" as macros %}
+
+{% block container %}
+{{super()}}
+<div class="row justify-content-md-center">
+  <div class=" col-md-auto">
+    <div class="card mb-3" style="border: none;">
+      <div class="row g-0">
+        <div class="col-md-3 d-flex align-items-center justify-content-center">
+          <img src="{{ user.gravatar(size=400) }}" class="img-fluid"
+            style="width: 500px; height: 230px; border-radius: 50%; object-fit: cover;">
+        </div>
+
+        <div class="col-md-8">
+          <div class="card-body">
+            <h4 class="card-title">
+              {{ user.username|title }}
+              <h6>
+                {% if current_user.is_authenticated and user != current_user and
+                user.is_following(current_user) %}
+                <span class="badge rounded-pill bg-light text-dark">Follows you</span>
+                {% endif %}
+              </h6>
+              <h6>
+                <span class="badge bg-warning text-dark">
+                  {% if user.location %}
+                  <a href="http://maps.google.com/?q={{ user.location }}" style="color: white; text-decoration: none;">
+                    {{ user.location }}
+                  </a>
+                  {% endif %}
+                </span>
+              </h6>
+            </h4>
+            <p class="card-text">{% if user.about_me %}{{ user.about_me }}{% endif %}</p>
+            <p class="card-text"><small class="text-body-secondary">Member since {{user.member_since.date() }}.</small>
+            </p>
+            <p class="card-text"><small class="text-body-secondary">Last seen {{ format_relative_time(user.last_seen) }}
+                ago.</small></p>
+            <a href="mailto:{{ user.email }}" class="btn btn-success">Send Mail</a>
+            {% if user == current_user %}
+            <a class="btn btn-primary" href="{{ url_for('.edit_profile') }}">
+              Edit Profile
+            </a>
+            {% endif %}
+            {% if current_user.is_administrator() %}
+            <a class="btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.id) }}">
+              Edit Profile [Admin]
+            </a>
+            {% endif %}
+
+            {% if current_user.can(Permission.FOLLOW) and user != current_user %}
+            {% if not current_user.is_following(user) %}
+            <a href="{{ url_for('.follow', username=user.username) }}" class="btn btn-primary">Follow</a>
+            {% else %}
+            <a href="{{ url_for('.unfollow', username=user.username) }}" class="btn btn-secondary">Unfollow</a>
+            {% endif %}
+            {% endif %}
+            <a href="{{ url_for('.followers', username=user.username) }}"">
+            <button type=" button" class="btn btn-dark position-relative">
+              Followers
+              <span class="position-absolute top-0 start-100 translate-middle rounded-pill badge bg-success">
+                {{ user.followers.count() - 1}}
+              </span>
+              </button>
+            </a>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row justify-content-md-center">
+  <div class="col-md-7">
+    {{ macros.post_links(posts=posts, current_user=current_user, format_relative_time=format_relative_time) }}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+<div class="container" style="margin-top: 15px;">
+  {% for comment in comments %}
+  <div class="row" style="margin-bottom: 5px;">
+    <div class="card">
+      <div class="row g-0">
+        <div class="col-md-2" style="border-radius: 50%; overflow: hidden; max-width: 30px; max-height: 30px;">
+          <img src="{{comment.author.gravatar()}}" class="img-fluid rounded-start" alt="profile-img">
+        </div>
+        {% if moderate %}
+        <div class="col-md-auto">
+          <div class="card-body">
+            {{comment.body_html | safe}}
+            <p class="card-text"><small class="text-muted">
+                {{ comment.author.username }},
+                {{ format_relative_time(comment.timestamp) }} ago.
+                {% if comment.disabled %}
+                <a href="{{url_for('.moderate_enable', id=comment.id)}}"><button type="button"
+                    class="btn btn-success">Enable</button></a>
+                {% else %}
+                <a href="{{url_for('.moderate_disable', id=comment.id)}}"><button type="button"
+                    class="btn btn-danger">Disable</button></a>
+                {% endif %}
+                <a href="{{url_for('.delete_comment', id=comment.id)}}"><button type="button"
+                    class="btn btn-danger">Delete</button></a>
+                
+              </small></p>
+          </div>
+        </div>
+        {% else %}
+        <div class="col-md-auto">
+          <div class="card-body">
+            {% if comment.disabled %}
+            <i>This comment has been disabled by the moderator.</i>
+            {% else %}
+            {{comment.body_html | safe}}
+            {% endif %}
+            <p class="card-text"><small class="text-muted">
+                {{ comment.author.username }},
+                {{ format_relative_time(comment.timestamp) }} ago.
+              </small></p>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+  {% endfor %}
+</div>

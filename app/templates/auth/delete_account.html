@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block title %}Flasky - Login{% endblock %}
+{% block container %}
+{{super()}}
+<div class="row justify-content-md-center">
+    <div class="col-md-auto">
+        <div class="card" style="max-width: 400px;  margin-left: 10px; margin-right: 10px;">
+            <img src="{{image_url}}" class="card-img-top" alt="Delete Account">
+            <div class="card-body">
+                <h5 class="card-title">Delete Account</h5>
+                <p class="card-text">Account Information</p>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-inline">{{current_user.username}}</li>
+                <li class="list-group-item d-inline">{{current_user.email}}</li>
+            </ul>
+            <div class="card-body">
+                {{ render_form(form, button_map={'yes_button': 'success', 'no_button': 'danger'}) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+    {% endblock %}

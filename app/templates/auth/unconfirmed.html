@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block container %}
+    {{super()}}
+    <div class="row justify-content-md-center">
+        <div class="col-md-auto" style=" margin-left: 10px; margin-right: 10px;">
+            <p>
+                Want another confirmation code?
+                <a href="{{ url_for('auth.resend_confirmation') }}">
+                    Click here
+                </a>
+            </p>
+        </div>
+    </div>
+    
+{% endblock %}

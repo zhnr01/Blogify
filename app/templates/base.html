@@ -1,0 +1,105 @@
+{% from 'bootstrap5/utils.html' import render_messages %}
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    {% block head %}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    {% block styles %}
+    <!-- Bootstrap CSS -->
+    {{ bootstrap.load_css() }}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/pygments.css')}}">
+
+
+    {% endblock %}
+    <title>BLog App</title>
+    {% endblock %}
+
+</head>
+
+<body style="font-family: Roboto, sans-serif;">
+    {% block container %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavDropdown">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link active navbar-brand" aria-current="page" href="{{url_for('main.index')}}">
+                            <img src="{{url_for('static', filename='icons/main_icon.png')}}" width="30" height="30"
+                                alt="">
+                            Home
+                        </a>
+                    </li>
+
+                    <!-- <li class="nav-item">
+                        <a class="nav-link" href="#">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Pricing</a>
+                    </li> -->
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.confirmed %}
+                            <li class="nav-item">
+                                <a class="nav-link active" aria-current="page" href="{{url_for('main.user', username=current_user.username)}}">Profile</a>
+                            </li>
+                        {% endif %}
+                    {% if current_user.can(Permission.MODERATE_COMMENTS) %}
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{ url_for('main.moderate') }}">Moderate Comments</a>
+                    </li>
+                    {% endif %}
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{url_for('auth.login')}}">Sign In</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="{{url_for('auth.register')}}">Sign Up</a>
+                    </li>
+                    {% endif %}
+
+                    
+                </ul>
+                {% if current_user.is_authenticated %}
+                <div class="nav-item dropdown" style="margin-right: 50px;">
+                    <a class="nav-link dropdown-toggle" href="" id="navbarDropdownMenuLink" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false" style="color: rgb(219, 219, 218);">
+                        <img src="{{current_user.gravatar()}}" width="30" height="30" style="border-radius: 50%;"
+                            alt="">
+                            Account Settings
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <li><a class="dropdown-item" href="{{url_for('auth.change_password')}}">Change password</a>
+                        </li>
+                        <li><a class="dropdown-item" href="{{url_for('auth.change_email')}}">Change email</a></li>
+                        <li><a class="dropdown-item" href="{{url_for('auth.delete_account')}}">Delete Account</a>
+                        </li>
+                        <li><a class="dropdown-item" href="{{url_for('auth.logout')}}">Sign Out</a>
+                        </li>
+                    </ul>
+
+                </div>
+                {% endif %}
+            </div>
+        
+        </div>
+    </nav>
+    {{ render_messages(dismiss_animate=True, dismissible=True) }}
+
+    {% endblock %}
+
+    {% block scripts %}
+    <!-- Optional JavaScript -->
+    {{ bootstrap.load_js() }}
+    {{ pagedown.include_pagedown() }}
+
+    {% endblock %}
+</body>
+
+</html>

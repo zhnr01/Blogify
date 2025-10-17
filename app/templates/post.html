@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% from 'bootstrap4/form.html' import render_form %}
+{% import "_macros.html" as macros %}
+
+{% block container %}
+{{super()}}
+<div class="row justify-content-md-center" style="margin-top: 20px;">
+  <div class="col-md-7">
+    <h1>
+      {{ viewed_post.title }}
+      {% if current_user == viewed_post.author %}
+                  <a href="{{ url_for('.edit', id=viewed_post.id) }}">
+                    <span class="badge bg-success">Edit</span>
+                  </a>
+      {% endif %}
+    </h1>
+    {% if viewed_post.body_html %}
+    {{ viewed_post.body_html | safe }}
+    {% else %}
+    {{ viewed_post.body }}
+    {% endif %}
+
+  </div>
+</div>
+<div class="row justify-content-md-center">
+  <div class="col-md-7" style="padding-left: 30%;">
+    <div class="card mb-3">
+      <div class="row g-0">
+        <div class="col-md-2" style="border-radius: 50%; overflow: hidden; max-height: 50px; max-width: 50px;">
+          <img src="{{viewed_post.author.gravatar()}}" class="img-fluid rounded-start">
+        </div>
+        <div class="col-md-8">
+          <div class="card-body">
+            <h5 class="card-title">
+              <a href="{{url_for('.user', username=viewed_post.author.username)}}"
+                style="text-decoration: none; color: black;">
+                {{viewed_post.author.username}}
+              </a>
+              
+            </h5>
+            <!-- <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p> -->
+            <p class="card-text"><small class="text-muted">Last updated {{format_relative_time(viewed_post.timestamp)}}
+                ago</small></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row justify-content-md-center">
+  <div class="col-md-7">
+    <h5>Comments</h5>
+    {% if current_user.is_authenticated %}
+    {{render_form(form)}}
+    {% endif %}
+
+    {% include '_comments.html' %}
+  </div>
+</div>
+
+<div class="row justify-content-md-center">
+  <div class="col-md-7">
+    {{macros.pagination_widget(pagination, endpoint, id=viewed_post.id)}}
+  </div>
+</div>
+{% endblock %}

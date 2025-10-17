@@ -1,0 +1,95 @@
+{% macro pagination_widget(pagination, endpoint) %}
+<nav aria-label="Page navigation example">
+  <ul class="pagination">
+    <li class="page-item {% if not pagination.has_prev %} disabled{% endif %}">
+      <a class="page-link" href="{% if pagination.has_prev %}{{ url_for(endpoint,
+            page = pagination.page - 1, **kwargs) }}{% else %}#{% endif %}" aria-label="Previous">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+    {% for p in pagination.iter_pages() %}
+    {% if p %}
+    {% if p == pagination.page %}
+    <li class="page-item active"><a class="page-link" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a></li>
+    {% else %}
+    <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page = p, **kwargs) }}">{{ p }}</a></li>
+    {% endif %}
+    {% else %}
+    <li class="page-item disabled"><a class="page-link" href="#">&hellip;</a></li>
+    {% endif %}
+    {% endfor %}
+    <li class="page-item {% if not pagination.has_next %} disabled{% endif %}">
+      <a class="page-link" href="{% if pagination.has_next %}{{ url_for(endpoint,
+            page = pagination.page + 1, **kwargs) }}{% else %}#{% endif %}" aria-label="Next">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+{% endmacro %}
+
+{% macro post_links(posts, current_user, show_followed, format_relative_time) %}
+<div class="container" style="margin-top: 15px;">
+  {% for post in posts %}
+  <div class="row" style="margin-bottom: 15px;">
+    <a href="{{ url_for('.post', id=post.id) }}" aria-current="true"
+      style="text-decoration: none; color: rgb(87, 80, 80);">
+      <div class="card">
+        <div class="row g-0">
+          <div class="col-md-1" style="border-radius: 50%; overflow: hidden; max-height: 50px; max-width: 50px;">
+            <img src="{{post.author.gravatar()}}" class="img-fluid rounded-start" alt="profile-img">
+          </div>
+          <div class="col-md-9">
+            <div class="card-body">
+              {{ post.title }}
+              <p class="card-text"><small class="text-muted">
+                  {{ post.author.username }},
+                  {{ format_relative_time(post.timestamp) }} ago
+                  {% if current_user == post.author %}
+                  <a href="{{ url_for('.edit', id=post.id) }}">
+                    <span class="badge bg-success">Edit</span>
+                  </a>
+                  {% elif current_user.is_administrator() %}
+                  <a href="{{ url_for('.edit', id=post.id) }}">
+                    <span class="badge bg-success">Edit[Admin]</span>
+                  </a>
+                  {% endif %}
+
+                </small></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+
+
+{% macro followers(user, follows, format_relative_time) %}
+<div class="container" style="margin-top: 15px;">
+  {% for follower in follows %}
+  <div class="row">
+      <a href="{{url_for('.user', username=follower['user'].username)}}" class="list-group-item list-group-item-action" style="border: none;">
+        <div class="card mb-3" style="max-width: 540px;">
+          <div class="row g-0">
+            <div class="col-md-4" style="border-radius: 50%; overflow: hidden; max-height: 70px; max-width: 70px;">
+              <img src="{{follower['user'].gravatar()}}" class="img-fluid rounded-start" alt="...">
+            </div>
+            <div class="col-md-8">
+              <div class="card-body">
+                {{follower['user'].username}}
+                <p class="card-text"><small class="text-muted">
+                  Followed {{format_relative_time(follower['timestamp'])}} ago.
+                </small></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  {% endfor %}
+</div>
+{% endmacro %}
+

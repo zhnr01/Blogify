@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% from 'bootstrap4/form.html' import render_form %}
+
+{% block container %}
+    {{super()}}
+    <div class="row justify-content-md-center">
+        <div class="col-6" style=" margin-left: 10px; margin-right: 10px;">
+            <h1>
+                Edit Your Profile
+            </h1>
+            {{ render_form(form) }}
+        </div>
+    
+{% endblock %}
