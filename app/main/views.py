@@ -7,6 +7,9 @@ from .forms import CommentForm, EditProfileAdminForm, EditProfileForm, PostForm
 from . import main
 from ..decorators import admin_required, permission_required
 from ..models import User, Role
+from ..services import comments as comment_service
+from ..services import posts as post_service
+
 
 
 @main.route('/all')
@@ -28,21 +31,12 @@ def show_followed():
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
-    if form.validate_on_submit():
-        from .. import db
-        '''
-            The current_user variable from Flask-Login, like all context variables, 
-            is implemented as a thread-local proxy object. This object behaves like 
-            a user object but is really a thin wrapper that contains the actual
-            user object inside. The database needs a real user object, which is obtained 
-            by calling _get_current_object() on the proxy object.
-        '''
-        post = Post(
+    if current_user.can(Permission.WRITE) and form.validate_on_submit():
+        # current_user is a thread-local proxy; the DB needs the real object.
+        post_service.create_post(
             title=form.title.data,
             body=form.body.data,
             author=current_user._get_current_object())
-        db.session.add(post)
-        db.session.commit()
         return redirect(url_for('.index'))
     
     show_followed = False
@@ -123,13 +117,11 @@ def edit_profile_admin(id):
 def post(id):
     post = Post.query.get_or_404(id)
     form = CommentForm()
-    if form.validate_on_submit():
-        from .. import db
-        comment = Comment(body=form.body.data,
+    if current_user.can(Permission.COMMENT) and form.validate_on_submit():
+        comment_service.create_comment(
+            body=form.body.data,
             post=post,
             author=current_user._get_current_object())
-        db.session.add(comment)
-        db.session.commit()
         flash('Your comment has been published.')
         return redirect(url_for('.post', id=post.id, page=-1))
     page = request.args.get('page', 1, type=int)
@@ -152,16 +144,12 @@ def post(id):
 @main.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit(id):
-    from .. import db
     post = Post.query.get_or_404(id)
     if current_user != post.author and not current_user.can(Permission.ADMINISTER):
         abort(403)
     form = PostForm()
     if form.validate_on_submit():
-        post.title = form.title.data
-        post.body = form.body.data
-        db.session.add(post)
-        db.session.commit()
+        post_service.update_post(post, title=form.title.data, body=form.body.data)
         flash('The post has been updated.')
         return redirect(url_for('.post', id=post.id))
     form.title.data = post.title

@@ -1,70 +1,78 @@
+"""Application factory and extension wiring.
+
+Extensions are instantiated at module scope but bound to the app inside
+``create_app`` so the app can be created multiple times (tests, workers, CLI)
+with different configuration.
+"""
+from config import config
+
+# --- Extensions (unbound) --------------------------------------------------
+# Imported here so the rest of the app can do ``from app import db`` etc.
 from flask import Flask
-from flask_bootstrap import Bootstrap5
+from flask_caching import Cache
+from flask_login import LoginManager
 from flask_mail import Mail
+from flask_migrate import Migrate
+from flask_pagedown import PageDown
 from flask_sqlalchemy import SQLAlchemy
 
-from config import config
-from flask_login import LoginManager
 from .helper import format_relative_time
-from flask_pagedown import PageDown
 
-
-bootstrap = Bootstrap5()
-mail = Mail()
-
-''' Moment() integrates the moment.js library to provide data and time features.
-    It can display timestamps in real-time without reloading the pages.
-'''
+try:
+    from flask_bootstrap import Bootstrap5
+except ImportError:  # package name is bootstrap_flask in some envs
+    Bootstrap5 = None
 
 db = SQLAlchemy()
+migrate = Migrate()
+mail = Mail()
+cache = Cache()
 page_down = PageDown()
+bootstrap = Bootstrap5() if Bootstrap5 else None
 
 login_manager = LoginManager()
-login_manager.session_protection = 'strong'
-login_manager.login_view = 'auth.login'
-from .models import AnonymousUser, Permission
+login_manager.session_protection = "strong"
+login_manager.login_view = "auth.login"
+
+from .models import AnonymousUser, Permission  # noqa: E402
+
 login_manager.anonymous_user = AnonymousUser
 
 
-
-def create_app(config_name='default'):
+def create_app(config_name="default"):
+    """Build and configure a Flask application instance."""
     app = Flask(__name__)
-    '''
-        It loads all the settings from the configuration object. For instance, if the configureation
-        class contains the SECRET_KEY, then it will be used to configure the app(app.config['SECRET_KEY']='key')
-    '''
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 
-    bootstrap.init_app(app)
-    mail.init_app(app)
+    # Bind extensions to this app instance.
     db.init_app(app)
+    migrate.init_app(app, db)
+    mail.init_app(app)
+    cache.init_app(app)
     page_down.init_app(app)
     login_manager.init_app(app)
+    if bootstrap is not None:
+        bootstrap.init_app(app)
 
-    from .main import main as main_blueprint
-    from .auth import auth as auth_blueprint
-    from .api import api as api_blueprint
-
-
-    
-    # Context processors make variables globally available to all templates. 
-    # The below will make Permission class available to all templetes
-    # Context processors make variables available to all templates during rendering
-    @main_blueprint.app_context_processor
-    def inject_permissions_and_time_conversion():
-        return dict(Permission=Permission, format_relative_time=format_relative_time)
-
-    
-    '''
-    When registering the blueprint with the main app using app.register_blueprint(auth_blueprint, url_prefix='/auth'), 
-    the url_prefix parameter is set to '/auth'. This means that the route defined in the auth_blueprint will be 
-    accessible under the '/auth' path.
-    So, in this case, the login route would be accessible at the URL: http://yourdomain.com/auth/login
-    '''
-    app.register_blueprint(auth_blueprint, url_prefix='/auth')
-    app.register_blueprint(main_blueprint)
-    app.register_blueprint(api_blueprint, url_prefix='/api/v1')
-    # attach routes and custom error pages here
+    _register_blueprints(app)
+    _register_context_processors(app)
 
     return app
+
+
+def _register_blueprints(app):
+    from .api import api as api_blueprint
+    from .auth import auth as auth_blueprint
+    from .main import main as main_blueprint
+
+    app.register_blueprint(main_blueprint)
+    app.register_blueprint(auth_blueprint, url_prefix="/auth")
+    app.register_blueprint(api_blueprint, url_prefix="/api/v1")
+
+
+def _register_context_processors(app):
+    @app.context_processor
+    def inject_globals():
+        return dict(Permission=Permission,
+                    format_relative_time=format_relative_time)

@@ -1,43 +1,69 @@
+"""Post API resources."""
 from flask import current_app, g, jsonify, request, url_for
+from marshmallow import ValidationError as SchemaValidationError
+
+from app.models import Permission
+from app.schemas import post_schema, posts_schema
+from app.services import posts as post_service
+
 from . import api
 from .decorators import permission_required
-from app.models import Permission, Post
+from .errors import not_found, unprocessable
+from .pagination import page_arg, paginate
 
 
 @api.route('/posts/')
 def get_posts():
-    page = request.args.get('page', 1, type=int)
-    pagination = Post.query.paginate(
-        page=page, per_page=current_app.config['BLOGIFY_POSTS_PER_PAGE'],
-        error_out=False)
-    posts = pagination.items
-    prev = None
-    if pagination.has_prev:
-        prev = url_for('api.get_posts', page=page-1)
-    next = None
-    if pagination.has_next:
-        next = url_for('api.get_posts', page=page+1)
-    return jsonify({
-        'posts': [post.to_json() for post in posts],
-        'prev_url': prev,
-        'next_url': next,
-        'count': pagination.total
-    })
+    pagination = post_service.list_posts(
+        page=page_arg(),
+        per_page=current_app.config['BLOGIFY_POSTS_PER_PAGE'],
+    )
+    return jsonify(paginate(
+        pagination,
+        posts_schema.dump(pagination.items),
+        'api.get_posts',
+    ))
+
+
+@api.route('/posts/<int:id>')
+def get_post(id):
+    post = post_service.get_post(id)
+    if post is None:
+        return not_found('post not found')
+    return jsonify(post_schema.dump(post))
 
 
 @api.route('/posts/', methods=['POST'])
 @permission_required(Permission.WRITE)
 def new_post():
-    from app import db
-    post = Post.from_json(request.json)
-    post.author = g.current_user
-    db.session.add(post)
-    db.session.commit()
-    return jsonify(post.to_json()), 201, \
-        {'Location': url_for('api.get_post', id=post.id)}
+    try:
+        data = post_schema.load(request.get_json(silent=True) or {})
+    except SchemaValidationError as err:
+        return unprocessable(err.messages)
+
+    post = post_service.create_post(
+        title=data.get('title'),
+        body=data['body'],
+        author=g.current_user,
+    )
+    response = jsonify(post_schema.dump(post))
+    response.status_code = 201
+    response.headers['Location'] = url_for('api.get_post', id=post.id, _external=True)
+    return response
 
 
-@api.route('/posts/<int:id>')
-def get_post(id):
-    post = Post.query.get_or_404(id)
-    return jsonify(post.to_json())
+@api.route('/posts/<int:id>', methods=['PUT'])
+@permission_required(Permission.WRITE)
+def edit_post(id):
+    post = post_service.get_post(id)
+    if post is None:
+        return not_found('post not found')
+    if g.current_user != post.author and not g.current_user.can(Permission.ADMINISTER):
+        return not_found('post not found')
+    try:
+        data = post_schema.load(request.get_json(silent=True) or {})
+    except SchemaValidationError as err:
+        return unprocessable(err.messages)
+
+    post = post_service.update_post(post, title=data.get('title'), body=data['body'])
+    return jsonify(post_schema.dump(post))

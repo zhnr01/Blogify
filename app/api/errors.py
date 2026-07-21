@@ -1,26 +1,52 @@
-from flask import jsonify, render_template, request
+"""Consistent JSON error envelopes for the API.
+
+Every error response has the same shape::
+
+    {"error": "<slug>", "message": "<human readable>", ...}
+
+so clients can branch on a stable ``error`` field.
+"""
+from flask import jsonify
 
 from app.exceptions import ValidationError
 
-
-def forbidden(message):
-    response = jsonify({'error': 'forbidden', 'message': message})
-    response.status_code = 403
-    return response
+from . import api
 
 
-def unauthorized(message):
-    response = jsonify({'error': 'unauthorized', 'message': message})
-    response.status_code = 401
+def _error(status, slug, message, **extra):
+    payload = {'error': slug, 'message': message}
+    payload.update(extra)
+    response = jsonify(payload)
+    response.status_code = status
     return response
 
 
 def bad_request(message):
-    response = jsonify({'error': 'bad request', 'message': message})
-    response.status_code = 400
-    return response
+    return _error(400, 'bad_request', message)
 
-from . import api
+
+def unauthorized(message):
+    return _error(401, 'unauthorized', message)
+
+
+def forbidden(message):
+    return _error(403, 'forbidden', message)
+
+
+def not_found(message='resource not found'):
+    return _error(404, 'not_found', message)
+
+
+def unprocessable(errors):
+    """422 for schema validation failures; ``errors`` is a field->messages map."""
+    return _error(422, 'validation_error', 'input failed validation', details=errors)
+
+
 @api.errorhandler(ValidationError)
 def validation_error(e):
-    return bad_request(e.args[0])
+    return bad_request(e.args[0] if e.args else 'invalid input')
+
+
+@api.errorhandler(404)
+def api_not_found(e):
+    return not_found()
