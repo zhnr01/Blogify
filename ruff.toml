@@ -1,0 +1,26 @@
+# Ruff configuration. See https://docs.astral.sh/ruff/
+target-version = "py312"
+line-length = 100
+
+exclude = [
+    ".venv",
+    "migrations/versions",
+    "__pycache__",
+]
+
+[lint]
+# pycodestyle (E, W), pyflakes (F), isort (I), pyupgrade (UP), flake8-bugbear (B)
+select = ["E", "W", "F", "I", "UP", "B"]
+ignore = [
+    "E501",  # line length is handled by the formatter, not enforced hard
+    "B008",  # function calls in argument defaults are common in Flask patterns
+]
+
+[lint.per-file-ignores]
+# Tests intentionally do local imports and re-import fixtures.
+"tests/*" = ["E402", "F401"]
+# The package __init__ imports for side effects and re-exports.
+"app/__init__.py" = ["E402", "F401"]
+"celery_worker.py" = ["E402", "F401"]
+# Blueprint packages import their views/errors at the bottom for side effects.
+"app/*/__init__.py" = ["E402", "F401"]

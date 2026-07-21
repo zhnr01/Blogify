@@ -84,7 +84,7 @@ def test_token_cannot_be_used_to_get_token(client, user, auth_headers):
 
 def test_comment_permission_enforced(client, make_user, auth_headers):
     # A user whose role lacks COMMENT cannot post comments.
-    author = make_user(email='a@e.com', username='author', password='pw')
+    make_user(email='a@e.com', username='author', password='pw')
     # Create a post to comment on.
     resp = client.post('/api/v1/posts/', headers=auth_headers('a@e.com', 'pw'),
                        json={'title': 'p', 'body': 'a post body'})

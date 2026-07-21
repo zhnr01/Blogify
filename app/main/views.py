@@ -1,15 +1,21 @@
-from flask import abort, current_app, flash, make_response, redirect, render_template, request, url_for
+from flask import (
+    abort,
+    current_app,
+    flash,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_login import current_user, login_required
 
-from ..models import Comment, Permission, Post
-
-from .forms import CommentForm, EditProfileAdminForm, EditProfileForm, PostForm
-from . import main
 from ..decorators import admin_required, permission_required
-from ..models import User, Role
+from ..models import Comment, Permission, Post, Role, User
 from ..services import comments as comment_service
 from ..services import posts as post_service
-
+from . import main
+from .forms import CommentForm, EditProfileAdminForm, EditProfileForm, PostForm
 
 
 @main.route('/all')
@@ -38,7 +44,7 @@ def index():
             body=form.body.data,
             author=current_user._get_current_object())
         return redirect(url_for('.index'))
-    
+
     show_followed = False
     if current_user.is_authenticated:
         show_followed = bool(request.cookies.get('show_followed', ''))
@@ -51,7 +57,7 @@ def index():
         page=page, per_page=5,
         error_out=False)
     posts = pagination.items
-    return render_template('index.html', show_followed=show_followed, 
+    return render_template('index.html', show_followed=show_followed,
                            form=form, posts=posts, pagination=pagination)
 
 
@@ -172,7 +178,7 @@ def follow(username):
     from .. import db
     current_user.follow(user)
     db.session.commit()
-    flash('You are now following %s.' % username)
+    flash(f'You are now following {username}.')
     return redirect(url_for('.user', username=username))
 
 
@@ -187,7 +193,7 @@ def unfollow(username):
     from .. import db
     current_user.unfollow(user)
     db.session.commit()
-    flash('You unfollowed %s.' % username)
+    flash(f'You unfollowed {username}.')
     return redirect(url_for('.user', username=username))
 
 

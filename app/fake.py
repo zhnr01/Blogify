@@ -1,8 +1,11 @@
 from random import randint
-from sqlalchemy.exc import IntegrityError
+
 from faker import Faker
+from sqlalchemy.exc import IntegrityError
+
 from . import db
-from .models import User, Post
+from .models import Post, User
+
 
 def users(count=100):
     fake = Faker()
@@ -25,7 +28,7 @@ def users(count=100):
 def posts(count=100):
     fake = Faker()
     user_count = User.query.count()
-    for i in range(count):
+    for _ in range(count):
         u = User.query.offset(randint(0, user_count - 1)).first()
         p = Post(
             title=fake.pystr(min_chars=64, max_chars=80),

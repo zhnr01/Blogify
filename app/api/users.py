@@ -5,7 +5,6 @@ from app import db
 from app.models import Post, User
 from app.schemas import posts_schema, user_schema
 
-
 from . import api
 from .errors import not_found
 from .pagination import page_arg, paginate

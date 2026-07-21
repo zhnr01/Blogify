@@ -1,8 +1,16 @@
-from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, TextAreaField, BooleanField, SelectField, ValidationError
-from wtforms.validators import Length, DataRequired, Email, Regexp
-from ..models import Role, User
 from flask_pagedown.fields import PageDownField
+from flask_wtf import FlaskForm
+from wtforms import (
+    BooleanField,
+    SelectField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+    ValidationError,
+)
+from wtforms.validators import DataRequired, Email, Length, Regexp
+
+from ..models import Role, User
 
 
 class EditProfileForm(FlaskForm):
@@ -39,7 +47,7 @@ class EditProfileAdminForm(FlaskForm):
     submit = SubmitField('Submit', render_kw={'style': 'margin-top: 15px;'})
 
     def __init__(self, user, *args, **kwargs):
-        super(EditProfileAdminForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.role.choices = [(role.id, role.name)
                              for role in Role.query.order_by(Role.name).all()]
         self.user = user

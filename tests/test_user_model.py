@@ -1,4 +1,6 @@
 """User model and permission tests."""
+import pytest
+
 from app.models import AnonymousUser, Permission, Role, User
 
 
@@ -9,11 +11,8 @@ def test_password_setter(app):
 
 def test_no_password_getter(app):
     u = User(password='cat')
-    try:
-        u.password
-    except AttributeError:
-        return
-    raise AssertionError('password should not be readable')
+    with pytest.raises(AttributeError):
+        _ = u.password
 
 
 def test_password_verification(app):

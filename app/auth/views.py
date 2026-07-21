@@ -1,19 +1,16 @@
-from flask import render_template, redirect, request, url_for, flash
-from . import auth
-from ..models import User
-from .forms import LoginForm, RegistrationForm, PasswdChangeForm, ChangeEmailForm, YesNoForm
+from flask import flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
+
 from .. import db
 from ..email import send_email
+from ..models import User
 from ..security import limiter
+from . import auth
+from .forms import ChangeEmailForm, LoginForm, PasswdChangeForm, RegistrationForm, YesNoForm
 
 
-'''
-    The current_user varaible provided by the flask-login is automatically available to all templates,
-    so there is no need to pass it through the view fucntions to the templates.
-
-    For more information on how the current_user works goto PAGE#135-113 on book.
-'''
+# current_user (from Flask-Login) is available in all templates automatically,
+# so it does not need to be passed through view functions.
 @auth.route('/login', methods=['GET', 'POST'])
 @limiter.limit('10 per minute', methods=['POST'])
 def login():
@@ -21,38 +18,19 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_passwd(form.password.data):
-            '''
-            This function marks the user as logged in the user session. Basically, it writes the 
-            logged in user's ID to the user session as a string.
-            '''
             login_user(user, form.remember_me.data)
-            '''
-                Here (request.args.get('next')) returns the url of the protected 
-                page that the user was trying to access before being redirected to 
-                login page. If the user was redirected to the login page as a result
-                of unauthorized access to a page then the URL of that page will be
-                stored in the 'next' query string arguement.
-            '''
+            # 'next' holds the protected page the user was heading to before being
+            # bounced to login; fall back to the index if it is absent.
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('Invalid username or password', 'danger')
     return render_template('auth/login.html', form=form)
 
 
-'''
-    Here, the order of the decorators matters because decorators effect the decorators used below them
-    along with the origional function. So, here first the logout function will be decorated by the 
-    @login_required decorator which will add some additional properties to it and then the resulting 
-    function will be registered as the route. Changing the order will produce wrong results because
-    then the function will first be registered as the route before receiving extra properties from
-    then @login_required decorator.
-'''
+# Decorator order matters: @login_required must wrap the view before it is
+# registered as a route, so it is listed above @auth.route.
 @auth.route('/logout')
 @login_required
 def logout():
-    '''
-        logout_user() will remove and reset the user session. Basically, it will delete the 
-        logged in user's ID from the user session.
-    '''
     logout_user()
     flash('You have been logged out.')
     return redirect(url_for('main.index'))

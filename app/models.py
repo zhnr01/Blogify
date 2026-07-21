@@ -73,7 +73,7 @@ class Role(db.Model):
     users = db.relationship('User', backref='role')
 
     def __repr__(self):
-        return '<Role %r>' % self.name
+        return f'<Role {self.name!r}>'
 
     @staticmethod
     def insert_roles():
@@ -245,7 +245,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.passwd_hash, password)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return f'<User {self.username!r}>'
 
 
 @login_manager.user_loader

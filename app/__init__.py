@@ -4,8 +4,6 @@ Extensions are instantiated at module scope but bound to the app inside
 ``create_app`` so the app can be created multiple times (tests, workers, CLI)
 with different configuration.
 """
-from config import config
-
 # --- Extensions (unbound) --------------------------------------------------
 # Imported here so the rest of the app can do ``from app import db`` etc.
 from flask import Flask
@@ -15,6 +13,8 @@ from flask_mail import Mail
 from flask_migrate import Migrate
 from flask_pagedown import PageDown
 from flask_sqlalchemy import SQLAlchemy
+
+from config import config
 
 from .helper import format_relative_time
 
