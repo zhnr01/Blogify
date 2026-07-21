@@ -136,9 +136,9 @@ def post(id):
     page = request.args.get('page', 1, type=int)
     if page == -1:
         page = post.comments.count() // \
-            current_app.config['FLASKY_COMMENTS_PER_PAGE'] + 1
+            current_app.config['BLOGIFY_COMMENTS_PER_PAGE'] + 1
     pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
-                            page=page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+                            page=page, per_page=current_app.config['BLOGIFY_COMMENTS_PER_PAGE'],
                             error_out=False)
     comments = pagination.items
     return render_template('post.html', viewed_post=post,
@@ -227,7 +227,7 @@ def followers(username):
 def moderate():
     page = request.args.get('page', 1, type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
-                page=page, per_page=current_app.config['FLASKY_COMMENTS_PER_PAGE'],
+                page=page, per_page=current_app.config['BLOGIFY_COMMENTS_PER_PAGE'],
                 error_out=False)
     comments = pagination.items
     return render_template('moderate.html', comments=comments,

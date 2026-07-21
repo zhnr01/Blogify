@@ -1,22 +1,50 @@
-alembic==1.13.1
-blinker==1.7.0
+# Runtime dependencies (pinned).
+
+# Web framework & extensions
+Flask==3.0.3
+Werkzeug==3.0.3
+Jinja2==3.1.4
+itsdangerous==2.2.0
 click==8.1.7
-colorama==0.4.6
-dominate==2.9.1
-Flask==3.0.1
-Flask-Bootstrap==3.3.7.1
-Flask-Mail==0.9.1
-Flask-Migrate==4.0.5
-Flask-Moment==1.0.5
+Bootstrap-Flask==2.4.0
 Flask-SQLAlchemy==3.1.1
-greenlet==3.0.3
-itsdangerous==2.1.2
-Jinja2==3.1.3
-Mako==1.3.0
-MarkupSafe==2.1.4
-packaging==23.2
-SQLAlchemy==2.0.25
-typing_extensions==4.9.0
-visitor==0.1.3
-Werkzeug==3.0.1
+Flask-Migrate==4.0.7
+Flask-Login==0.6.3
+Flask-Mail==0.10.0
+Flask-Moment==1.0.6
+Flask-PageDown==0.4.0
+Flask-WTF==1.2.1
 WTForms==3.1.2
+
+# Database
+SQLAlchemy==2.0.31
+alembic==1.13.2
+psycopg2-binary==2.9.9
+
+# Content processing
+bleach==6.1.0
+markdown==3.6
+Pygments==2.18.0
+beautifulsoup4==4.12.3
+
+# Time / humanization
+pendulum==3.0.0
+humanize==4.9.0
+
+# API / validation
+marshmallow==3.21.3
+flask-httpauth==4.8.0
+
+# Caching, background jobs, rate limiting
+redis==5.0.7
+Flask-Caching==2.3.0
+celery==5.4.0
+Flask-Limiter==3.7.0
+
+# Observability
+python-json-logger==2.0.7
+prometheus-flask-exporter==0.23.1
+
+# Configuration & serving
+python-dotenv==1.0.1
+gunicorn==22.0.0

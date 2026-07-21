@@ -8,7 +8,7 @@ from app.models import Permission, Post
 def get_posts():
     page = request.args.get('page', 1, type=int)
     pagination = Post.query.paginate(
-        page=page, per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],
+        page=page, per_page=current_app.config['BLOGIFY_POSTS_PER_PAGE'],
         error_out=False)
     posts = pagination.items
     prev = None
