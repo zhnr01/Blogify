@@ -58,6 +58,11 @@ def create_app(config_name="default"):
     _register_blueprints(app)
     _register_context_processors(app)
 
+    # Rate limiting, CSRF, and security headers. Registered after blueprints so
+    # the API blueprint exists to be exempted from session CSRF.
+    from .security import init_security
+    init_security(app)
+
     return app
 
 

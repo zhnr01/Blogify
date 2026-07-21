@@ -5,6 +5,7 @@ from .forms import LoginForm, RegistrationForm, PasswdChangeForm, ChangeEmailFor
 from flask_login import current_user, login_required, login_user, logout_user
 from .. import db
 from ..email import send_email
+from ..security import limiter
 
 
 '''
@@ -14,6 +15,7 @@ from ..email import send_email
     For more information on how the current_user works goto PAGE#135-113 on book.
 '''
 @auth.route('/login', methods=['GET', 'POST'])
+@limiter.limit('10 per minute', methods=['POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -57,6 +59,7 @@ def logout():
 
 
 @auth.route('/register', methods=['GET', 'POST'])
+@limiter.limit('5 per minute', methods=['POST'])
 def register():
     form = RegistrationForm()
     if form.validate_on_submit():

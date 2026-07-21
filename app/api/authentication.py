@@ -8,6 +8,7 @@ from flask import g, jsonify
 from flask_httpauth import HTTPBasicAuth
 
 from app.models import User
+from app.security import limiter
 
 from . import api
 from .errors import forbidden, unauthorized
@@ -47,6 +48,7 @@ def before_request():
 
 
 @api.route('/tokens/', methods=['POST'])
+@limiter.limit('10 per minute')
 def get_token():
     """Issue a fresh auth token. Must authenticate with email + password."""
     if g.current_user.is_anonymous or g.token_used:

@@ -52,8 +52,10 @@ class Config:
     CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", os.environ.get("REDIS_URL", "redis://localhost:6379/1"))
 
     # Rate limiting
+    RATELIMIT_ENABLED = _bool("RATELIMIT_ENABLED", True)
     RATELIMIT_STORAGE_URI = os.environ.get("RATELIMIT_STORAGE_URI", os.environ.get("REDIS_URL", "memory://"))
     RATELIMIT_DEFAULT = os.environ.get("RATELIMIT_DEFAULT", "200 per hour")
+    RATELIMIT_HEADERS_ENABLED = True
 
     @staticmethod
     def init_app(app):
