@@ -67,6 +67,10 @@ def create_app(config_name="default"):
     from .observability import init_observability
     init_observability(app)
 
+    # Background jobs (Celery). Email and other slow work run off-thread.
+    from .tasks import init_celery
+    init_celery(app)
+
     return app
 
 

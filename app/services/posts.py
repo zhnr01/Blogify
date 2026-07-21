@@ -22,6 +22,32 @@ def list_posts(page: int, per_page: int):
     )
 
 
+def list_feed_ids(page: int, per_page: int):
+    """Return cached (post_ids, total) for a feed page.
+
+    We cache lightweight identifiers rather than ORM objects (which aren't
+    safely serializable across processes) under a version-stamped key, then
+    reload the live rows. Writes bump the version to invalidate every page.
+    """
+    version = feed_version()
+    key = f"{_FEED_NAMESPACE}:v{version}:p{page}:s{per_page}"
+    try:
+        cached = cache.get(key)
+    except Exception:
+        cached = None
+    if cached is not None:
+        return cached
+
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
+        page=page, per_page=per_page, error_out=False)
+    result = ([p.id for p in pagination.items], pagination.total)
+    try:
+        cache.set(key, result)
+    except Exception:
+        pass
+    return result
+
+
 def create_post(*, title: str | None, body: str, author) -> Post:
     """Create and persist a post, then invalidate the cached feed."""
     post = Post(title=title, body=body, author=author)
