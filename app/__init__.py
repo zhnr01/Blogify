@@ -63,6 +63,10 @@ def create_app(config_name="default"):
     from .security import init_security
     init_security(app)
 
+    # Structured logging, request IDs, health/readiness endpoints, metrics.
+    from .observability import init_observability
+    init_observability(app)
+
     return app
 
 
