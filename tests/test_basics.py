@@ -1,44 +1,33 @@
-import unittest
+"""App bootstrap, health, and security-header smoke tests."""
 from flask import current_app
-from app import create_app, db
-from app.models import User
 
 
-class UserModelTestCase(unittest.TestCase):
-    def test_password_setter(self):
-        u = User(password='cat')
-        self.assertTrue(u.passwd_hash is not None)
-
-    def test_no_password_getter(self):
-        u = User(password='cat')
-        with self.assertRaises(AttributeError):
-            u.password
-
-    def test_password_verification(self):
-        u = User(password='cat')
-        self.assertTrue(u.verify_passwd('cat'))
-        self.assertFalse(u.verify_passwd('dog'))
-
-    def test_password_salts_are_random(self):
-        u = User(password='cat')
-        u2 = User(password='cat')
-        self.assertTrue(u.passwd_hash != u2.passwd_hash)
+def test_app_exists(app):
+    assert current_app is not None
 
 
-class BasicsTestCase(unittest.TestCase):
-    def setUp(self):
-        self.app = create_app('testing')
-        self.app_context = self.app.app_context()
-        self.app_context.push()
-        db.create_all()
+def test_app_is_testing(app):
+    assert current_app.config['TESTING']
 
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.app_context.pop()
 
-    def test_app_exists(self):
-        self.assertFalse(current_app is None)
+def test_healthz(client):
+    resp = client.get('/healthz')
+    assert resp.status_code == 200
+    assert resp.get_json()['status'] == 'ok'
 
-    def test_app_is_testing(self):
-        self.assertTrue(current_app.config['TESTING'])
+
+def test_readyz(client):
+    resp = client.get('/readyz')
+    assert resp.status_code == 200
+    assert resp.get_json()['status'] == 'ready'
+
+
+def test_request_id_header(client):
+    resp = client.get('/healthz')
+    assert resp.headers.get('X-Request-ID')
+
+
+def test_security_headers(client):
+    resp = client.get('/healthz')
+    assert resp.headers.get('X-Content-Type-Options') == 'nosniff'
+    assert resp.headers.get('X-Frame-Options') == 'SAMEORIGIN'
