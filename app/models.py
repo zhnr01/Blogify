@@ -49,8 +49,8 @@ class Comment(db.Model):
     body_html = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=pendulum.now)
     disabled = db.Column(db.Boolean, default=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), index=True)
 
     @staticmethod
     def on_changed_body(target, value, oldvalue, initiator):
@@ -108,7 +108,7 @@ class User(UserMixin, db.Model):
     member_since = db.Column(db.DateTime(), default=pendulum.now)
     last_seen = db.Column(db.DateTime(), default=pendulum.now)
     passwd_hash = db.Column(db.String(256))
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), index=True)
     confirmed = db.Column(db.Boolean, default=False)
     posts = db.relationship('Post', backref='author',
                             lazy='dynamic', cascade='all, delete-orphan')
@@ -268,7 +268,7 @@ class Post(db.Model):
     title = db.Column(db.String(80))
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=pendulum.now)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'), index=True)
     body_html = db.Column(db.Text)
     comments = db.relationship(
         'Comment', backref='post', lazy='dynamic', cascade='all, delete-orphan')
