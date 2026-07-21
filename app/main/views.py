@@ -27,7 +27,6 @@ def show_followed():
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
-    print(request.cookies)
     form = PostForm()
     if form.validate_on_submit():
         from .. import db

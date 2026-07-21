@@ -1,10 +1,10 @@
-import pendulum
+"""Template helper utilities."""
 import humanize
+import pendulum
+
 
 def format_relative_time(dt):
-    pendulum_dt = pendulum.instance(dt, tz=pendulum.local_timezone())
-    time_difference = pendulum.now() - pendulum_dt
-    print(pendulum.now(), pendulum_dt)
-    relative_time = humanize.naturaldelta(time_difference)
-
-    return relative_time
+    """Return a human-friendly relative time string (e.g. "3 hours ago")."""
+    localized = pendulum.instance(dt, tz=pendulum.local_timezone())
+    delta = pendulum.now() - localized
+    return humanize.naturaldelta(delta)
